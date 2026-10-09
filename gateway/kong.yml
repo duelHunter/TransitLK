@@ -1,0 +1,76 @@
+_format_version: "3.0"
+_transform: true
+
+# Declarative (DB-less) Kong configuration - matches the report's "API Gateway: Kong on
+# Kubernetes (routing, auth, rate limiting)" (section 5) and the architecture diagram's
+# single edge entry point in front of the microservices tier.
+
+services:
+  - name: user-service
+    url: http://user-service:8081
+    routes:
+      - name: user-service-route
+        paths:
+          - /api/auth
+          - /api/users
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
+
+  - name: ticketing-service
+    url: http://ticketing-service:8082
+    routes:
+      - name: ticketing-service-route
+        paths:
+          - /api/routes
+          - /api/bookings
+          - /api/tickets
+          - /api/trips
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
+
+  - name: tracking-service-http
+    url: http://tracking-service:8083
+    routes:
+      - name: tracking-service-http-route
+        paths:
+          - /api/telemetry
+          - /api/vehicles
+          - /health
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 300
+          policy: local
+
+  - name: tracking-service-ws
+    url: http://tracking-service:8083
+    routes:
+      - name: tracking-service-ws-route
+        paths:
+          - /socket.io
+        strip_path: false
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+      credentials: false
