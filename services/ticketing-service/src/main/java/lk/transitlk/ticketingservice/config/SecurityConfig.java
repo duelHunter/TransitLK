@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/routes/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/operator/**").hasRole("OPERATOR")
+                        .requestMatchers("/api/regulator/**").hasAnyRole("REGULATOR", "ADMIN")
                         .requestMatchers("/api/tickets/validate").hasAnyRole("CONDUCTOR", "ADMIN")
                         .requestMatchers("/api/trips", "/api/trips/*/tickets", "/api/trips/*/start", "/api/trips/*/complete")
                                 .hasAnyRole("CONDUCTOR", "OPERATOR", "ADMIN")
