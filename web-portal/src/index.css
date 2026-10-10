@@ -297,3 +297,13 @@ button.secondary {
 .status-completed {
   color: #15803d;
 }
+
+.inline-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inline-check input {
+  width: auto;
+}
