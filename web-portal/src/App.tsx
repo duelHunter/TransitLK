@@ -31,7 +31,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/live-map" element={<LiveMapPage />} />
+          <Route
+            path="/live-map"
+            element={
+              <ProtectedRoute roles={['OPERATOR', 'ADMIN']}>
+                <LiveMapPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/validate"
             element={

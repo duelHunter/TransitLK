@@ -18,7 +18,7 @@ export function NavBar() {
       <div className="nav-links">
         <Link to="/search">Search &amp; Book</Link>
         {user && <Link to="/tickets">My Tickets</Link>}
-        <Link to="/live-map">Live Map</Link>
+        {user && (user.role === 'OPERATOR' || user.role === 'ADMIN') && <Link to="/live-map">Live Map</Link>}
         {user && (user.role === 'CONDUCTOR' || user.role === 'OPERATOR' || user.role === 'ADMIN') && (
           <Link to="/trips">Trips</Link>
         )}
