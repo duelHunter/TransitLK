@@ -12,4 +12,20 @@ public class KafkaTopicConfig {
     public NewTopic userEventsTopic() {
         return TopicBuilder.name("user-events").partitions(3).replicas(1).build();
     }
+
+    // Declared here too so the notification listener never starts before its topics exist.
+    @Bean
+    public NewTopic ticketEventsTopic() {
+        return TopicBuilder.name("ticket-events").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic paymentEventsTopic() {
+        return TopicBuilder.name("payment-events").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic tripEventsTopic() {
+        return TopicBuilder.name("trip-events").partitions(3).replicas(1).build();
+    }
 }
