@@ -9,6 +9,7 @@ import { MyTicketsPage } from './pages/MyTicketsPage';
 import { LiveMapPage } from './pages/LiveMapPage';
 import { ValidateTicketPage } from './pages/ValidateTicketPage';
 import { TripsPage } from './pages/TripsPage';
+import { OperatorPage } from './pages/OperatorPage';
 
 function App() {
   return (
@@ -43,6 +44,14 @@ function App() {
             element={
               <ProtectedRoute roles={['CONDUCTOR', 'OPERATOR', 'ADMIN']}>
                 <TripsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator"
+            element={
+              <ProtectedRoute roles={['OPERATOR']}>
+                <OperatorPage />
               </ProtectedRoute>
             }
           />
