@@ -4,5 +4,6 @@ public enum Role {
     PASSENGER,
     CONDUCTOR,
     OPERATOR,
-    ADMIN
+    ADMIN,
+    REGULATOR
 }

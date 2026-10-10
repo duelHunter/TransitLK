@@ -20,8 +20,14 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
     private UUID userId;
+
+    @PrePersist
+    void ensureId() {
+        if (userId == null) {
+            userId = UUID.randomUUID();
+        }
+    }
 
     @Column(nullable = false)
     private String name;
