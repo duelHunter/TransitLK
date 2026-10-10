@@ -2,13 +2,16 @@ package lk.transitlk.ticketingservice.service;
 
 import lk.transitlk.ticketingservice.entity.Payment;
 import lk.transitlk.ticketingservice.entity.Ticket;
+import lk.transitlk.ticketingservice.entity.Trip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class EventPublisher {
@@ -62,6 +65,21 @@ public class EventPublisher {
         kafkaTemplate.send("payment-events", payment.getPaymentId().toString(), event)
                 .whenComplete((r, ex) -> {
                     if (ex != null) log.warn("Failed to publish payment event: {}", ex.getMessage());
+                });
+    }
+
+    public void publishTripEvent(String eventType, Trip trip, List<UUID> passengerIds) {
+        Map<String, Object> event = Map.of(
+                "eventType", eventType,
+                "tripId", trip.getTripId().toString(),
+                "routeName", trip.getRoute().getName(),
+                "vehicleReg", trip.getVehicleReg(),
+                "passengerIds", passengerIds.stream().map(UUID::toString).toList(),
+                "timestamp", Instant.now().toString()
+        );
+        kafkaTemplate.send("trip-events", trip.getTripId().toString(), event)
+                .whenComplete((r, ex) -> {
+                    if (ex != null) log.warn("Failed to publish {} event: {}", eventType, ex.getMessage());
                 });
     }
 }

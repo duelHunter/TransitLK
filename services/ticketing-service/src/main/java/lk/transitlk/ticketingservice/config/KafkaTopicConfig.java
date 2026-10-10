@@ -17,4 +17,9 @@ public class KafkaTopicConfig {
     public NewTopic paymentEventsTopic() {
         return TopicBuilder.name("payment-events").partitions(3).replicas(1).build();
     }
+
+    @Bean
+    public NewTopic tripEventsTopic() {
+        return TopicBuilder.name("trip-events").partitions(3).replicas(1).build();
+    }
 }

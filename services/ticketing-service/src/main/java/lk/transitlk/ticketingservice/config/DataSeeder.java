@@ -16,6 +16,10 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
+    /** Must equal user-service DemoUserSeeder.OPERATOR_ID. */
+    public static final java.util.UUID DEMO_OPERATOR_ID =
+            java.util.UUID.fromString("00000000-0000-0000-0000-0000000000a1");
+
     private final RouteRepository routeRepository;
     private final TripRepository tripRepository;
 
@@ -64,6 +68,7 @@ public class DataSeeder implements CommandLineRunner {
         t.setStatus(TripStatus.SCHEDULED);
         t.setTotalSeats(seats);
         t.setAvailableSeats(seats);
+        t.setOperatorId(DEMO_OPERATOR_ID);
         return t;
     }
 }

@@ -28,7 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/routes/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/tickets/validate").hasAnyRole("CONDUCTOR", "ADMIN")
-                        .requestMatchers("/api/trips/*/start", "/api/trips/*/complete").hasAnyRole("CONDUCTOR", "OPERATOR", "ADMIN")
+                        .requestMatchers("/api/trips", "/api/trips/*/tickets", "/api/trips/*/start", "/api/trips/*/complete")
+                                .hasAnyRole("CONDUCTOR", "OPERATOR", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

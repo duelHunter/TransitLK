@@ -1,6 +1,7 @@
 package lk.transitlk.ticketingservice.repository;
 
 import lk.transitlk.ticketingservice.entity.Trip;
+import lk.transitlk.ticketingservice.entity.TripStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,10 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
                        @Param("destination") String destination,
                        @Param("from") Instant from,
                        @Param("to") Instant to);
+
+    List<Trip> findAllByOrderByDepartureTimeAsc();
+
+    List<Trip> findByStatusOrderByDepartureTimeAsc(TripStatus status);
+
+    List<Trip> findByOperatorIdOrderByDepartureTimeAsc(UUID operatorId);
 }

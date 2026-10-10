@@ -42,4 +42,10 @@ public class Trip {
 
     @Column(nullable = false)
     private int availableSeats;
+
+    /** Owning fleet operator (user-service user id). Null for legacy rows. */
+    private UUID operatorId;
+
+    /** Set when the conductor starts the trip; used for punctuality analytics. */
+    private Instant startedAt;
 }
