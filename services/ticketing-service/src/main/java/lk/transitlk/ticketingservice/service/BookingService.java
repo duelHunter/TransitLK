@@ -85,6 +85,8 @@ public class BookingService {
         ticket.setPayment(payment);
         ticket.setStatus(TicketStatus.ISSUED);
         // Persist first to obtain a ticketId, then sign - the QR payload embeds that id.
+        // qr_code is NOT NULL, so the first insert carries a placeholder replaced right below.
+        ticket.setQrCode("PENDING");
         ticket = ticketRepository.save(ticket);
         ticket.setQrCode(signingService.sign(ticket));
         ticket = ticketRepository.save(ticket);
