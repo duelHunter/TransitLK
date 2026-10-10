@@ -19,6 +19,9 @@ export function NavBar() {
         <Link to="/search">Search &amp; Book</Link>
         {user && <Link to="/tickets">My Tickets</Link>}
         <Link to="/live-map">Live Map</Link>
+        {user && (user.role === 'CONDUCTOR' || user.role === 'OPERATOR' || user.role === 'ADMIN') && (
+          <Link to="/trips">Trips</Link>
+        )}
         {user && (user.role === 'CONDUCTOR' || user.role === 'ADMIN') && (
           <Link to="/validate">Validate Ticket</Link>
         )}

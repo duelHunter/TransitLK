@@ -248,3 +248,52 @@ button:disabled {
 .map-card {
   padding: 1rem;
 }
+
+.row-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+button.secondary {
+  background: transparent;
+  color: inherit;
+  border: 1px solid currentColor;
+}
+
+.manifest {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.stat-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.stat {
+  flex: 1 1 10rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 8px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 1.4rem;
+}
+
+.status-ongoing {
+  color: #b45309;
+}
+
+.status-scheduled {
+  color: #1d4ed8;
+}
+
+.status-completed {
+  color: #15803d;
+}
