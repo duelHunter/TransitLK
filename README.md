@@ -71,6 +71,23 @@ automatically on first boot of `ticketing-service`.
    node services/tracking-service/scripts/simulate-vehicle.js NB-1234
    ```
 
+## Demo accounts
+
+`user-service` seeds four enabled accounts on first start (password `demo1234`), so the
+demo needs no OTP step:
+
+| Role | Login |
+|---|---|
+| Passenger | `passenger@transitlk.lk` |
+| Conductor | `conductor@transitlk.lk` |
+| Operator | `operator@transitlk.lk` |
+| Regulator (NTC) | `regulator@transitlk.lk` |
+
+After upgrading from an older checkout, run `docker compose down -v` once so the seeded
+trips get an operator. `node scripts/smoke-backend.mjs` runs the whole backend demo story
+(book, start trip, ticket-gated tracking, notifications, validate, complete, reports)
+against a running stack and exits non-zero if any step fails.
+
 ## Running a single service locally (outside Docker)
 
 Bring up just the infra you need, e.g.:
@@ -108,9 +125,9 @@ Each service falls back to `localhost` for every dependency when its `*_HOST` /
 | FR4 Booking, fare calc | `ticketing-service` (`BookingService`, `Route.calculateFare()`) |
 | FR5 Payment | `ticketing-service` (`PaymentGatewayClient` mock) |
 | FR6 QR issuance/validation | `ticketing-service` (`TicketSigningService`, `QrImageService`, `TicketValidationService`) |
-| FR7 Notifications | Not implemented (report's Notification Service is out of scope); `ticket-events`/`payment-events` on Kafka are the integration point a real notification consumer would subscribe to |
-| FR8 Fleet/schedule mgmt | Partially: routes/trips are seeded, not CRUD-managed via UI |
-| FR9 Reporting/analytics | Not implemented (Analytics Service out of scope) |
+| FR7 Notifications | `user-service` (`NotificationEventListener` consumes `ticket-events`, `payment-events`, `trip-events`; in-app list via `/api/notifications`; SMS is a log line) |
+| FR8 Fleet/schedule mgmt | `ticketing-service` (`OperatorController`: create/cancel own trips, per-operator isolation) |
+| FR9 Reporting/analytics | `ticketing-service` (`OperatorController` summary, `RegulatorController` analytics computed live, no separate Analytics service) |
 | FR10 Trip lifecycle | `ticketing-service` (`TripController` start/complete, ticket reconciliation) |
 
 ## Repository layout

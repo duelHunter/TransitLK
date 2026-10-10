@@ -13,6 +13,7 @@ services:
         paths:
           - /api/auth
           - /api/users
+          - /api/notifications
         strip_path: false
     plugins:
       - name: rate-limiting
@@ -29,6 +30,8 @@ services:
           - /api/bookings
           - /api/tickets
           - /api/trips
+          - /api/operator
+          - /api/regulator
         strip_path: false
     plugins:
       - name: rate-limiting
