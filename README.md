@@ -88,6 +88,11 @@ trips get an operator. `node scripts/smoke-backend.mjs` runs the whole backend d
 (book, start trip, ticket-gated tracking, notifications, validate, complete, reports)
 against a running stack and exits non-zero if any step fails.
 
+## Mobile app
+
+The passenger app (Expo / React Native) lives in `mobile-app/`; see
+[mobile-app/README.md](mobile-app/README.md) for setup on a phone or emulator.
+
 ## Running a single service locally (outside Docker)
 
 Bring up just the infra you need, e.g.:
