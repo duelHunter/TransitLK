@@ -10,6 +10,7 @@ import { LiveMapPage } from './pages/LiveMapPage';
 import { ValidateTicketPage } from './pages/ValidateTicketPage';
 import { TripsPage } from './pages/TripsPage';
 import { OperatorPage } from './pages/OperatorPage';
+import { RegulatorPage } from './pages/RegulatorPage';
 
 function App() {
   return (
@@ -52,6 +53,14 @@ function App() {
             element={
               <ProtectedRoute roles={['OPERATOR']}>
                 <OperatorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/regulator"
+            element={
+              <ProtectedRoute roles={['REGULATOR', 'ADMIN']}>
+                <RegulatorPage />
               </ProtectedRoute>
             }
           />

@@ -26,6 +26,7 @@ export function NavBar() {
           <Link to="/validate">Validate Ticket</Link>
         )}
         {user && user.role === 'OPERATOR' && <Link to="/operator">Operator</Link>}
+        {user && (user.role === 'REGULATOR' || user.role === 'ADMIN') && <Link to="/regulator">Regulator</Link>}
       </div>
       <div className="nav-user">
         {user ? (
