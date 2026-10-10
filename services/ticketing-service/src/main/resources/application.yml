@@ -26,6 +26,8 @@ transitlk:
     secret: ${JWT_SECRET:transitlk-dev-secret-key-change-me-please-32bytes+}
   ticket:
     signing-secret: ${TICKET_SIGNING_SECRET:transitlk-ticket-signing-secret-32bytes-min}
+  tracking:
+    token-secret: ${TRACKING_TOKEN_SECRET:transitlk-tracking-token-secret-32bytes-min}
 
 management:
   endpoints:
