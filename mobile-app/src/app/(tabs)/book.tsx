@@ -3,8 +3,10 @@ import { Text } from 'react-native';
 import { api } from '../../api/client';
 import { errorMessage } from '../../api/errors';
 import type { TripSearchResult } from '../../api/types';
+import { MAIN_CITIES, searchError } from '../../lib/cities';
 import { formatDateTime, formatMoney } from '../../lib/format';
-import { Card, ErrorText, Field, HintText, PrimaryButton, Screen } from '../../ui/components';
+import { Card, ErrorText, HintText, PrimaryButton, Screen } from '../../ui/components';
+import { Select } from '../../ui/Select';
 import { colors } from '../../ui/theme';
 
 export default function BookScreen() {
@@ -17,12 +19,17 @@ export default function BookScreen() {
   const [message, setMessage] = useState<string | null>(null);
 
   async function onSearch() {
-    setError(null);
     setMessage(null);
+    const problem = searchError(origin, destination);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setError(null);
     setSearching(true);
     try {
       const { data } = await api.get<TripSearchResult[]>('/api/routes/search', {
-        params: { origin: origin.trim(), destination: destination.trim() },
+        params: { origin, destination },
       });
       setResults(data);
     } catch (err) {
@@ -52,8 +59,8 @@ export default function BookScreen() {
   return (
     <Screen>
       <Card>
-        <Field label="From" value={origin} onChangeText={setOrigin} autoCapitalize="words" />
-        <Field label="To" value={destination} onChangeText={setDestination} autoCapitalize="words" />
+        <Select label="From" value={origin} options={MAIN_CITIES} onChange={setOrigin} />
+        <Select label="To" value={destination} options={MAIN_CITIES} onChange={setDestination} />
         <PrimaryButton title="Search trips" onPress={onSearch} loading={searching} />
       </Card>
 
