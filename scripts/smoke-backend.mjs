@@ -44,7 +44,6 @@ async function waitFor(fn, tries = 15) {
 const passenger = await login('passenger@transitlk.lk');
 const conductor = await login('conductor@transitlk.lk');
 const operator = await login('operator@transitlk.lk');
-const regulator = await login('regulator@transitlk.lk');
 
 const trips = await call(API, 'GET', '/api/trips?status=SCHEDULED', conductor);
 check('conductor lists scheduled trips', trips.status === 200 && trips.json.length > 0, JSON.stringify(trips));
@@ -113,12 +112,19 @@ check('operator summary shows revenue', summary.status === 200 && Number(summary
 const notOperator = await call(API, 'GET', '/api/operator/reports/summary', passenger);
 check('passenger cannot read the operator report', notOperator.status === 403, String(notOperator.status));
 
-const analytics = await call(API, 'GET', '/api/regulator/analytics', regulator);
-check(
-  'regulator analytics include punctuality',
-  analytics.status === 200 && analytics.json.routes.some((r) => r.avgDelayMinutes !== null),
-  JSON.stringify(analytics),
-);
+// Role rules: bookings, tickets and notifications belong to passengers only.
+const staffBooking = await call(API, 'POST', '/api/bookings', conductor, { tripId: trip.tripId, seatNo: 2, paymentMethod: 'CARD' });
+check('conductor cannot book a ticket', staffBooking.status === 403, String(staffBooking.status));
+const operatorTickets = await call(API, 'GET', '/api/tickets/mine', operator);
+check('operator has no tickets of their own', operatorTickets.status === 403, String(operatorTickets.status));
+const conductorNotifications = await call(API, 'GET', '/api/notifications', conductor);
+check('conductor has no notifications', conductorNotifications.status === 403, String(conductorNotifications.status));
+const regulatorGone = await call(API, 'GET', '/api/regulator/analytics', operator);
+check('regulator endpoint no longer exists', regulatorGone.status === 404, String(regulatorGone.status));
+const adminSignup = await call(API, 'POST', '/api/auth/register', null, {
+  name: 'Mallory', email: 'mallory@example.com', phone: '0779999999', password: 'password123', role: 'ADMIN',
+});
+check('ADMIN cannot be self-registered', adminSignup.status === 400, String(adminSignup.status));
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);

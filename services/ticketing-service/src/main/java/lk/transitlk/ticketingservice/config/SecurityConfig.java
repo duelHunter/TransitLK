@@ -3,6 +3,7 @@ package lk.transitlk.ticketingservice.config;
 import lk.transitlk.ticketingservice.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,11 +28,17 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/routes/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        // Operators: their own trips and reports.
                         .requestMatchers("/api/operator/**").hasRole("OPERATOR")
-                        .requestMatchers("/api/regulator/**").hasAnyRole("REGULATOR", "ADMIN")
+                        // Conductors (and admins): ticket validation.
                         .requestMatchers("/api/tickets/validate").hasAnyRole("CONDUCTOR", "ADMIN")
+                        // Trip control for staff.
                         .requestMatchers("/api/trips", "/api/trips/*/tickets", "/api/trips/*/start", "/api/trips/*/complete")
                                 .hasAnyRole("CONDUCTOR", "OPERATOR", "ADMIN")
+                        // Passengers only: booking, own tickets, cancelling and live tracking.
+                        .requestMatchers(HttpMethod.POST, "/api/bookings").hasRole("PASSENGER")
+                        .requestMatchers("/api/tickets/mine", "/api/tickets/*/cancel", "/api/tickets/*/track-token")
+                                .hasRole("PASSENGER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

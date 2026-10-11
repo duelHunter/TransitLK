@@ -10,14 +10,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/** Seeds one enabled account per staff role plus a passenger so the local demo needs no OTP step. */
+/** Seeds an enabled operator, conductor and passenger so the local demo needs no OTP step. */
 @Component
 @ConditionalOnProperty(name = "transitlk.demo.seed-users", havingValue = "true", matchIfMissing = true)
 public class DemoUserSeeder implements CommandLineRunner {
 
     public static final UUID OPERATOR_ID = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
     public static final UUID CONDUCTOR_ID = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
-    public static final UUID REGULATOR_ID = UUID.fromString("00000000-0000-0000-0000-0000000000a3");
     public static final UUID PASSENGER_ID = UUID.fromString("00000000-0000-0000-0000-0000000000a4");
 
     private static final String DEMO_PASSWORD = "demo1234";
@@ -34,7 +33,6 @@ public class DemoUserSeeder implements CommandLineRunner {
     public void run(String... args) {
         seed(OPERATOR_ID, "Demo Operator", "operator@transitlk.lk", "0710000001", Role.OPERATOR);
         seed(CONDUCTOR_ID, "Demo Conductor", "conductor@transitlk.lk", "0710000002", Role.CONDUCTOR);
-        seed(REGULATOR_ID, "Demo Regulator (NTC)", "regulator@transitlk.lk", "0710000003", Role.REGULATOR);
         seed(PASSENGER_ID, "Demo Passenger", "passenger@transitlk.lk", "0710000004", Role.PASSENGER);
     }
 

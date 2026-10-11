@@ -17,16 +17,18 @@ class DemoUserSeederTest {
     UserRepository userRepository;
 
     @Test
-    void seedsFourEnabledUsersWithFixedIds() {
+    void seedsThreeEnabledUsersWithFixedIds() {
         new DemoUserSeeder(userRepository, new BCryptPasswordEncoder()).run();
 
-        assertThat(userRepository.count()).isEqualTo(4);
+        assertThat(userRepository.count()).isEqualTo(3);
         User operator = userRepository.findById(DemoUserSeeder.OPERATOR_ID).orElseThrow();
         assertThat(operator.getRole()).isEqualTo(Role.OPERATOR);
         assertThat(operator.isEnabled()).isTrue();
         assertThat(operator.getEmail()).isEqualTo("operator@transitlk.lk");
-        assertThat(userRepository.findById(DemoUserSeeder.REGULATOR_ID).orElseThrow().getRole())
-                .isEqualTo(Role.REGULATOR);
+        assertThat(userRepository.findById(DemoUserSeeder.CONDUCTOR_ID).orElseThrow().getRole())
+                .isEqualTo(Role.CONDUCTOR);
+        assertThat(userRepository.findById(DemoUserSeeder.PASSENGER_ID).orElseThrow().getRole())
+                .isEqualTo(Role.PASSENGER);
     }
 
     @Test
@@ -35,6 +37,6 @@ class DemoUserSeederTest {
         seeder.run();
         seeder.run();
 
-        assertThat(userRepository.count()).isEqualTo(4);
+        assertThat(userRepository.count()).isEqualTo(3);
     }
 }

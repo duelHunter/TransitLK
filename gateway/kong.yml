@@ -31,7 +31,6 @@ services:
           - /api/tickets
           - /api/trips
           - /api/operator
-          - /api/regulator
         strip_path: false
     plugins:
       - name: rate-limiting

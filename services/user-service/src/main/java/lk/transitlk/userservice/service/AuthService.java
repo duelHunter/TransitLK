@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 @Service
 public class AuthService {
 
@@ -29,8 +32,20 @@ public class AuthService {
         this.eventPublisher = eventPublisher;
     }
 
+    /** Roles a person may pick for themselves; staff-level accounts are never self-service. */
+    private static final Set<Role> SELF_REGISTRABLE = EnumSet.of(Role.PASSENGER, Role.CONDUCTOR, Role.OPERATOR);
+
     @Transactional
     public MessageResponse register(RegisterRequest req) {
+        Role role;
+        try {
+            role = req.roleEnum();
+        } catch (IllegalArgumentException e) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Unknown role");
+        }
+        if (!SELF_REGISTRABLE.contains(role)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "This role cannot be self-registered");
+        }
         if (userRepository.existsByEmail(req.email())) {
             throw new ApiException(HttpStatus.CONFLICT, "Email already registered");
         }
@@ -38,7 +53,6 @@ public class AuthService {
             throw new ApiException(HttpStatus.CONFLICT, "Phone already registered");
         }
 
-        Role role = req.roleEnum();
         User user = new User();
         user.setName(req.name());
         user.setEmail(req.email());

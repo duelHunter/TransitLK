@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<MessageResponse> handleApiException(ApiException ex) {
         return ResponseEntity.status(ex.getStatus()).body(new MessageResponse(ex.getMessage()));
+    }
+
+    /** An unknown URL is a 404, not an "unexpected error". */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<MessageResponse> handleNotFound(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Not found"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

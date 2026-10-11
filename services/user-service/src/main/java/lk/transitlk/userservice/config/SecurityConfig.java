@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        // Only passengers receive notifications.
+                        .requestMatchers("/api/notifications/**").hasRole("PASSENGER")
                         .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated()
                 )
