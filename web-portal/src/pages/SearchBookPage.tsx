@@ -4,6 +4,7 @@ import { isAxiosError } from 'axios';
 import { apiClient } from '../api/client';
 import type { TripSearchResult } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { MAIN_CITIES, searchError } from '../lib/cities';
 
 export function SearchBookPage() {
   const { user } = useAuth();
@@ -17,8 +18,13 @@ export function SearchBookPage() {
 
   async function onSearch(e: FormEvent) {
     e.preventDefault();
-    setError(null);
     setMessage(null);
+    const problem = searchError(origin, destination);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setError(null);
     setSearching(true);
     try {
       const { data } = await apiClient.get<TripSearchResult[]>('/api/routes/search', {
@@ -60,11 +66,23 @@ export function SearchBookPage() {
       <form className="search-form" onSubmit={onSearch}>
         <label>
           Origin
-          <input value={origin} onChange={(e) => setOrigin(e.target.value)} required />
+          <select value={origin} onChange={(e) => setOrigin(e.target.value)} required>
+            {MAIN_CITIES.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           Destination
-          <input value={destination} onChange={(e) => setDestination(e.target.value)} required />
+          <select value={destination} onChange={(e) => setDestination(e.target.value)} required>
+            {MAIN_CITIES.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
         </label>
         <button type="submit" disabled={searching}>
           {searching ? 'Searching...' : 'Search'}
