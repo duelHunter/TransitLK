@@ -12,8 +12,10 @@ import java.util.UUID;
 
 public interface TripRepository extends JpaRepository<Trip, UUID> {
 
-    @Query("select t from Trip t where lower(t.route.origin) = lower(:origin) " +
-           "and lower(t.route.destination) = lower(:destination) " +
+    /** Buses run both ways, so a route matches when the two cities are given in either order. */
+    @Query("select t from Trip t where " +
+           "((lower(t.route.origin) = lower(:origin) and lower(t.route.destination) = lower(:destination)) " +
+           "or (lower(t.route.origin) = lower(:destination) and lower(t.route.destination) = lower(:origin))) " +
            "and t.departureTime between :from and :to " +
            "order by t.departureTime asc")
     List<Trip> search(@Param("origin") String origin,
