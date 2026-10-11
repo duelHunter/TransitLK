@@ -1,0 +1,4 @@
+# Shell scripts and container config must keep LF line endings even when core.autocrlf=true.
+# With CRLF, bash fails in the Postgres init step and the ticketing database is never created.
+*.sh text eol=lf
+*.conf text eol=lf
