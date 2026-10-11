@@ -3,7 +3,8 @@
 Functional prototype of the three core services scoped out of the CA-01 architecture
 report (`../latex/EG_2020_4202.pdf`): **User & Identity**, **Ticketing & Booking**
 (with QR e-tickets), and **Vehicle Tracking** (live GPS + ETA), fronted by a Kong API
-gateway and demonstrated through a React web portal.
+gateway and demonstrated through two mobile apps (passenger, conductor) and a React web
+portal for fleet operators.
 
 Route & Schedule, Payment, Analytics, and Notification are represented in the report's
 architecture but are **not** separately deployed here - route/schedule data lives inside
@@ -50,30 +51,36 @@ automatically on first boot of `ticketing-service`.
 
 ## Demo walkthrough
 
-1. **Register** a passenger at http://localhost:3000/register.
-2. The account needs OTP activation (FR1). No real SMS gateway is wired up, so read
-   the 6-digit code from the `user-service` container logs:
-   ```bash
-   docker compose logs -f user-service | grep "OTP for"
-   ```
-3. Enter the code on the **Verify OTP** screen - this logs you in.
-4. **Search & Book**: search "Colombo" -> "Kandy", book a trip. This calculates the
-   fare, "charges" the mock payment gateway, decrements the seat count, issues a
-   digitally-signed QR ticket, and publishes `ticket-events`/`payment-events` to Kafka.
-5. **My Tickets** shows the ticket with its QR code image.
-6. Register a second account with role **Conductor** (also needs OTP verification),
-   log in as that user, open **Validate Ticket**, and paste the `qrCode` value (visible
-   in the My Tickets API response, or via `GET /api/tickets/{id}`) to redeem it. A
-   second attempt correctly reports "already used".
-7. **Live Map**: run the bundled simulator to see a vehicle move across the map in
-   real time over WebSocket:
+Three roles, three clients (see "Demo accounts" for logins):
+
+1. **Passenger - mobile app** (`mobile-app/`): sign in, choose **From** and **To** from the city
+   dropdowns (try Colombo to Kandy) and book. The mock payment approves, a signed QR ticket is
+   issued, and a booking alert appears.
+2. **Conductor - conductor app** (`conductor-app/`): sign in, open **Trips** and **Start** the
+   bus the passenger booked (NB-1234). The passenger gets a "your bus is on the way" alert.
+3. Run the simulator so the bus moves, then on the passenger app open **My Tickets** and
+   **Track bus**: the passenger sees only the bus on their ticket.
    ```bash
    node services/tracking-service/scripts/simulate-vehicle.js NB-1234
    ```
+4. **Conductor app - Scan tickets**: scan the passenger's QR (or paste the code). A second scan of
+   the same ticket reports "already used". Switch on **Simulate offline** to see signature
+   checking on the phone and the sync queue. Then **Complete** the trip.
+5. **Operator - web portal** at http://localhost:3000: the dashboard shows revenue and occupancy,
+   **Live Map** shows the fleet, and trips can be scheduled or cancelled.
+
+New passenger or conductor accounts need OTP activation (FR1). No SMS gateway is wired up, so read
+the 6-digit code from the user-service log:
+```bash
+docker compose logs -f user-service | grep "OTP for"
+```
+
+Passengers and conductors have no web screens, and bookings, tickets and notifications are refused
+for every role except passenger.
 
 ## Demo accounts
 
-`user-service` seeds four enabled accounts on first start (password `demo1234`), so the
+`user-service` seeds three enabled accounts on first start (password `demo1234`), so the
 demo needs no OTP step:
 
 | Role | Login |
@@ -81,7 +88,6 @@ demo needs no OTP step:
 | Passenger | `passenger@transitlk.lk` |
 | Conductor | `conductor@transitlk.lk` |
 | Operator | `operator@transitlk.lk` |
-| Regulator (NTC) | `regulator@transitlk.lk` |
 
 After upgrading from an older checkout, run `docker compose down -v` once so the seeded
 trips get an operator. `node scripts/smoke-backend.mjs` runs the whole backend demo story
@@ -90,8 +96,16 @@ against a running stack and exits non-zero if any step fails.
 
 ## Mobile app
 
-The passenger app (Expo / React Native) lives in `mobile-app/`; see
-[mobile-app/README.md](mobile-app/README.md) for setup on a phone or emulator.
+There are two Expo / React Native apps, one per role:
+
+| App | Folder | For | Expo port |
+|---|---|---|---|
+| Passenger | [mobile-app/](mobile-app/README.md) | search, book, QR tickets, live tracking, alerts | 8090 |
+| Conductor | [conductor-app/](conductor-app/README.md) | trips, passenger list, QR scanning (offline-tolerant) | 8091 |
+
+The web portal is for **fleet operators** only (dashboard, trips, live fleet map). Passengers and
+conductors have no web screens. Ports 8081 (user-service) and 8000/8083 (API, tracking) must not be
+used by Expo, hence the 8090 and 8091 dev-server ports.
 
 ## Running a single service locally (outside Docker)
 
@@ -132,7 +146,7 @@ Each service falls back to `localhost` for every dependency when its `*_HOST` /
 | FR6 QR issuance/validation | `ticketing-service` (`TicketSigningService`, `QrImageService`, `TicketValidationService`) |
 | FR7 Notifications | `user-service` (`NotificationEventListener` consumes `ticket-events`, `payment-events`, `trip-events`; in-app list via `/api/notifications`; SMS is a log line) |
 | FR8 Fleet/schedule mgmt | `ticketing-service` (`OperatorController`: create/cancel own trips, per-operator isolation) |
-| FR9 Reporting/analytics | `ticketing-service` (`OperatorController` summary, `RegulatorController` analytics computed live, no separate Analytics service) |
+| FR9 Reporting/analytics | `ticketing-service` (`OperatorController` revenue and occupancy per trip, computed live; no separate Analytics service or regulator role) |
 | FR10 Trip lifecycle | `ticketing-service` (`TripController` start/complete, ticket reconciliation) |
 
 ## Repository layout

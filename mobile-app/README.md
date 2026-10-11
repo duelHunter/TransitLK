@@ -10,7 +10,7 @@ It talks to the backend through Kong (`:8000`) and to the tracking service (`:80
 cd mobile-app
 npm install
 cp .env.example .env      # then set EXPO_PUBLIC_API_HOST to your laptop's LAN IP
-npx expo start
+npx expo start -c --port 8090
 ```
 
 Scan the QR code with the Expo Go app, or press `a` for an Android emulator.
@@ -22,7 +22,7 @@ Scan the QR code with the Expo Go app, or press `a` for an Android emulator.
 ## Network checklist
 
 1. Phone and laptop are on the same Wi-Fi.
-2. The Windows firewall allows inbound TCP 8000 (Kong), 8083 (tracking) and 8081 (Metro) on the private network.
+2. The Windows firewall allows inbound TCP 8000 (Kong), 8083 (tracking) and 8090 (Expo dev server) on the private network. Do not use 8081 for Expo: the user-service publishes it.
 3. The backend is running: `docker compose up -d` from the repository root.
 4. `http://<laptop-ip>:8000/api/routes/search?origin=Colombo&destination=Kandy` opens in the phone's browser.
 
