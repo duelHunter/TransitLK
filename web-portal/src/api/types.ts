@@ -1,4 +1,4 @@
-export type Role = 'PASSENGER' | 'CONDUCTOR' | 'OPERATOR' | 'ADMIN' | 'REGULATOR';
+export type Role = 'PASSENGER' | 'CONDUCTOR' | 'OPERATOR' | 'ADMIN';
 
 export interface UserResponse {
   userId: string;
@@ -17,44 +17,7 @@ export interface AuthResponse {
   user: UserResponse;
 }
 
-export interface TripSearchResult {
-  tripId: string;
-  routeName: string;
-  origin: string;
-  destination: string;
-  vehicleReg: string;
-  departureTime: string;
-  arrivalTime: string;
-  fare: number;
-  availableSeats: number;
-  totalSeats: number;
-}
-
 export type TicketStatus = 'ISSUED' | 'VALIDATED' | 'CANCELLED' | 'EXPIRED';
-
-export interface TicketResponse {
-  ticketId: string;
-  tripId: string;
-  routeName: string;
-  origin: string;
-  destination: string;
-  departureTime: string;
-  seatNo: number | null;
-  fare: number;
-  status: TicketStatus;
-  qrCode: string;
-  qrImageBase64: string;
-  issuedAt: string;
-  validatedAt: string | null;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  reason: string;
-  ticketId: string | null;
-  seatNo: number | null;
-  validatedAt: string | null;
-}
 
 export interface LiveVehicle {
   vehicleReg: string;
@@ -121,22 +84,4 @@ export interface CreateTripRequest {
   departureTime: string;
   arrivalTime: string;
   totalSeats: number;
-}
-
-export interface RouteAnalytics {
-  routeName: string;
-  operatorId: string | null;
-  trips: number;
-  cancelledTrips: number;
-  ticketsSold: number;
-  revenue: number;
-  avgOccupancy: number;
-  avgDelayMinutes: number | null;
-}
-
-export interface RegulatorAnalytics {
-  totalTrips: number;
-  totalTicketsSold: number;
-  totalRevenue: number;
-  routes: RouteAnalytics[];
 }

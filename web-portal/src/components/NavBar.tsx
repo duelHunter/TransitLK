@@ -10,23 +10,18 @@ export function NavBar() {
     navigate('/login');
   }
 
+  const isOperator = user?.role === 'OPERATOR';
+  const isStaff = isOperator || user?.role === 'ADMIN';
+
   return (
     <nav className="navbar">
       <Link to="/" className="brand">
-        TransitLK
+        TransitLK Operator Portal
       </Link>
       <div className="nav-links">
-        <Link to="/search">Search &amp; Book</Link>
-        {user && <Link to="/tickets">My Tickets</Link>}
-        {user && (user.role === 'OPERATOR' || user.role === 'ADMIN') && <Link to="/live-map">Live Map</Link>}
-        {user && (user.role === 'CONDUCTOR' || user.role === 'OPERATOR' || user.role === 'ADMIN') && (
-          <Link to="/trips">Trips</Link>
-        )}
-        {user && (user.role === 'CONDUCTOR' || user.role === 'ADMIN') && (
-          <Link to="/validate">Validate Ticket</Link>
-        )}
-        {user && user.role === 'OPERATOR' && <Link to="/operator">Operator</Link>}
-        {user && (user.role === 'REGULATOR' || user.role === 'ADMIN') && <Link to="/regulator">Regulator</Link>}
+        {isOperator && <Link to="/operator">Dashboard</Link>}
+        {isStaff && <Link to="/trips">Trips</Link>}
+        {isStaff && <Link to="/live-map">Live Map</Link>}
       </div>
       <div className="nav-user">
         {user ? (

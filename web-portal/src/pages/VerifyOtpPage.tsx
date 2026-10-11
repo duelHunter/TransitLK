@@ -21,7 +21,7 @@ export function VerifyOtpPage() {
     setLoading(true);
     try {
       await verifyOtp(emailOrPhone, otp);
-      navigate('/search');
+      navigate('/');
     } catch (err) {
       setError(isAxiosError(err) ? err.response?.data?.message ?? err.message : 'Verification failed');
     } finally {

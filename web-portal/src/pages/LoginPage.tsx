@@ -18,7 +18,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login(emailOrPhone, password);
-      navigate('/search');
+      navigate('/');
     } catch (err) {
       setError(isAxiosError(err) ? err.response?.data?.message ?? err.message : 'Login failed');
     } finally {

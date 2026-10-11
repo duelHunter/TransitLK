@@ -1,5 +1,4 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { errorMessage } from '../api/errors';
 import type { ManifestEntry, TripDto, TripReconciliation, TripStatus } from '../api/types';
@@ -125,7 +124,6 @@ export function TripsPage() {
                     )}
                     {t.status === 'ONGOING' && (
                       <>
-                        <Link to="/validate">Validate tickets</Link>
                         <button disabled={busyId === t.tripId} onClick={() => act(t, 'complete')}>
                           Complete
                         </button>

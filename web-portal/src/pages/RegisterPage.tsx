@@ -12,7 +12,7 @@ export function RegisterPage() {
     email: '',
     phone: '',
     password: '',
-    role: 'PASSENGER',
+    role: 'OPERATOR',
     licenseNo: '',
   });
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +38,8 @@ export function RegisterPage() {
 
   return (
     <div className="card auth-card">
-      <h1>Register</h1>
+      <h1>Register as a fleet operator</h1>
+      <p className="hint">Passengers and conductors register in their mobile apps.</p>
       <form onSubmit={onSubmit}>
         <label>
           Full name
@@ -63,19 +64,9 @@ export function RegisterPage() {
           />
         </label>
         <label>
-          Role
-          <select value={form.role} onChange={(e) => update('role', e.target.value)}>
-            <option value="PASSENGER">Passenger</option>
-            <option value="CONDUCTOR">Conductor</option>
-            <option value="OPERATOR">Fleet Operator</option>
-          </select>
+          License No.
+          <input value={form.licenseNo} onChange={(e) => update('licenseNo', e.target.value)} />
         </label>
-        {form.role === 'OPERATOR' && (
-          <label>
-            License No.
-            <input value={form.licenseNo} onChange={(e) => update('licenseNo', e.target.value)} />
-          </label>
-        )}
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
