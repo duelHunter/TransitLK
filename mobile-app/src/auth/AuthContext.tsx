@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { api, setAuthToken } from '../api/client';
+import { api, setAuthToken, setSessionExpiredHandler } from '../api/client';
 import type { AuthResponse, UserResponse } from '../api/types';
 
 const TOKEN_KEY = 'transitlk_token';
@@ -17,6 +17,8 @@ export interface RegisterData {
 interface AuthContextValue {
   user: UserResponse | null;
   ready: boolean;
+  /** True after the server rejected our token; cleared by the next successful sign-in. */
+  sessionExpired: boolean;
   login: (emailOrPhone: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<string>;
   verifyOtp: (emailOrPhone: string, otp: string) => Promise<void>;
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [ready, setReady] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const persist = useCallback(async (auth: AuthResponse) => {
     setAuthToken(auth.token);
+    setSessionExpired(false);
     await SecureStore.setItemAsync(TOKEN_KEY, auth.token);
     await SecureStore.setItemAsync(USER_KEY, JSON.stringify(auth.user));
     setUser(auth.user);
@@ -83,9 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await SecureStore.deleteItemAsync(USER_KEY).catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      setSessionExpired(true);
+      void logout();
+    });
+    return () => setSessionExpiredHandler(null);
+  }, [logout]);
+
   const value = useMemo(
-    () => ({ user, ready, login, register, verifyOtp, logout }),
-    [user, ready, login, register, verifyOtp, logout],
+    () => ({ user, ready, sessionExpired, login, register, verifyOtp, logout }),
+    [user, ready, sessionExpired, login, register, verifyOtp, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -6,7 +6,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { Card, ErrorText, Field, HintText, PrimaryButton, Screen } from '../../ui/components';
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { login, sessionExpired } = useAuth();
   const router = useRouter();
   // Prefilled with the seeded demo passenger so the demo needs no typing.
   const [emailOrPhone, setEmailOrPhone] = useState('passenger@transitlk.lk');
@@ -33,7 +33,7 @@ export default function LoginScreen() {
         <Text style={{ fontSize: 22, fontWeight: '700' }}>Sign in</Text>
         <Field label="Email or phone" value={emailOrPhone} onChangeText={setEmailOrPhone} keyboardType="email-address" />
         <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry />
-        <ErrorText message={error} />
+        <ErrorText message={error ?? (sessionExpired ? 'Your session has expired. Please sign in again.' : null)} />
         <PrimaryButton title="Sign in" onPress={onLogin} loading={loading} />
         <HintText>Demo passenger is prefilled.</HintText>
       </Card>
