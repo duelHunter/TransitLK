@@ -96,6 +96,8 @@ public class BookingService {
         return TicketResponse.from(ticket, qrImageService.toBase64Png(ticket.getQrCode()));
     }
 
+    // Ticket.qrCode is a large object (@Lob); PostgreSQL only lets it be read inside a transaction.
+    @Transactional(readOnly = true)
     public TicketResponse getTicket(UUID ticketId, UUID requesterId, boolean isPrivileged) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Ticket not found"));
@@ -105,6 +107,7 @@ public class BookingService {
         return TicketResponse.from(ticket, qrImageService.toBase64Png(ticket.getQrCode()));
     }
 
+    @Transactional(readOnly = true)
     public List<TicketResponse> myTickets(UUID passengerId) {
         return ticketRepository.findByPassengerIdOrderByIssuedAtDesc(passengerId).stream()
                 .map(t -> TicketResponse.from(t, qrImageService.toBase64Png(t.getQrCode())))
