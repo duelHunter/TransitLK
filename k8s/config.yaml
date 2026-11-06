@@ -1,0 +1,33 @@
+# Settings shared by the services. Same names and values as the environment blocks in
+# docker-compose.yml; the host names (postgres, kafka, redis, mosquitto) are Kubernetes Service names.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: transitlk-config
+  labels:
+    app.kubernetes.io/part-of: transitlk
+data:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: transitlk
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  MQTT_URL: mqtt://mosquitto:1883
+  JWT_EXPIRATION_SECONDS: "3600"
+---
+# DEVELOPMENT VALUES ONLY: these are the same defaults docker-compose.yml uses. For any real
+# deployment replace them with generated secrets (kubectl create secret, or an external secret
+# manager such as AWS Secrets Manager with the External Secrets operator) and do not commit them.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: transitlk-secrets
+  labels:
+    app.kubernetes.io/part-of: transitlk
+type: Opaque
+stringData:
+  DB_PASSWORD: transitlk
+  JWT_SECRET: transitlk-dev-secret-key-change-me-please-32bytes+
+  TICKET_SIGNING_SECRET: transitlk-ticket-signing-secret-32bytes-min
+  TRACKING_TOKEN_SECRET: transitlk-tracking-token-secret-32bytes-min

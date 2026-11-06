@@ -1,0 +1,66 @@
+# Operator portal: static files served by nginx. The API address (VITE_API_BASE_URL) and tracking
+# address (VITE_WS_URL) are compiled into the bundle at image build time, so build the image with
+# the URLs the operator's browser will use (see k8s/README.md).
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-portal
+  labels:
+    app.kubernetes.io/name: web-portal
+    app.kubernetes.io/part-of: transitlk
+spec:
+  selector:
+    app.kubernetes.io/name: web-portal
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-portal
+  labels:
+    app.kubernetes.io/name: web-portal
+    app.kubernetes.io/part-of: transitlk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web-portal
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: web-portal
+        app.kubernetes.io/part-of: transitlk
+        app.kubernetes.io/component: edge
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web-portal
+          image: transitlk/web-portal:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20

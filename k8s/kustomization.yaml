@@ -1,0 +1,32 @@
+# Deploy everything with:  kubectl apply -k k8s/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: transitlk
+
+resources:
+  - namespace.yaml
+  - config.yaml
+  - data/postgres.yaml
+  - data/redis.yaml
+  - data/kafka.yaml
+  - data/mosquitto.yaml
+  - apps/user-service.yaml
+  - apps/ticketing-service.yaml
+  - apps/tracking-service.yaml
+  - apps/kong.yaml
+  - apps/web-portal.yaml
+  - hpa.yaml
+
+# Files that other parts of the repo also use. They are copied into k8s/files/ so this folder is
+# self-contained, and tools/check_manifests.py fails if a copy drifts from its original.
+configMapGenerator:
+  - name: kong-config
+    files:
+      - kong.yml=files/kong.yml
+  - name: postgres-init
+    files:
+      - init-multiple-dbs.sh=files/init-multiple-dbs.sh
+  - name: mosquitto-config
+    files:
+      - mosquitto.conf=files/mosquitto.conf
