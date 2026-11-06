@@ -107,6 +107,13 @@ The web portal is for **fleet operators** only (dashboard, trips, live fleet map
 conductors have no web screens. Ports 8081 (user-service) and 8000/8083 (API, tracking) must not be
 used by Expo, hence the 8090 and 8091 dev-server ports.
 
+## Kubernetes
+
+`k8s/` holds Kustomize manifests for the whole stack (deploy with `kubectl apply -k k8s/`). They are
+validated against the Kubernetes 1.32 schemas and 205 consistency checks, but have not been applied to
+a running cluster. See [k8s/README.md](k8s/README.md) for how to deploy to minikube, what maps to what,
+and the known limits (notably, tracking-service must stay at one replica).
+
 ## Running a single service locally (outside Docker)
 
 Bring up just the infra you need, e.g.:
