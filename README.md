@@ -107,6 +107,12 @@ The web portal is for **fleet operators** only (dashboard, trips, live fleet map
 conductors have no web screens. Ports 8081 (user-service) and 8000/8083 (API, tracking) must not be
 used by Expo, hence the 8090 and 8091 dev-server ports.
 
+## Status dashboard
+
+`node dashboard/server.js` then open http://localhost:8099: a lightweight page showing service health,
+container CPU and memory, Kafka, Redis and Postgres state, live counts and recent errors. It runs on
+the host with no dependencies and no login. See [dashboard/README.md](dashboard/README.md).
+
 ## Kubernetes
 
 `k8s/` holds Kustomize manifests for the whole stack (deploy with `kubectl apply -k k8s/`). They are

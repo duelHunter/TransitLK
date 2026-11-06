@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TransitLK Status</title>
+<style>
+  :root { --bg:#f3f4f6; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb; --ok:#15803d; --warn:#b45309; --down:#b91c1c; --unknown:#6b7280; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --border:#334155; --ok:#4ade80; --warn:#fbbf24; --down:#f87171; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:14px 18px; background:var(--card); border-bottom:1px solid var(--border); }
+  header h1 { font-size:18px; margin:0; flex:1 1 auto; }
+  .pill { padding:4px 12px; border-radius:999px; font-weight:700; color:#fff; background:var(--unknown); }
+  .pill.ok { background:var(--ok); } .pill.warn { background:var(--warn); } .pill.down { background:var(--down); }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px; }
+  section { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 10px; }
+  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+  .tile { border:1px solid var(--border); border-radius:8px; padding:10px 12px; border-left:5px solid var(--unknown); }
+  .tile.ok { border-left-color:var(--ok); } .tile.warn { border-left-color:var(--warn); } .tile.down { border-left-color:var(--down); }
+  .tile b { display:block; }
+  .tile small, .muted { color:var(--muted); }
+  .state { font-weight:700; } .state.ok { color:var(--ok); } .state.warn { color:var(--warn); } .state.down { color:var(--down); }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:12px; }
+  .scroll { overflow-x:auto; }
+  .bar { width:90px; height:8px; background:var(--border); border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px; }
+  .bar i { display:block; height:100%; background:var(--ok); }
+  .bar i.hi { background:var(--warn); }
+  .counts { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { border:1px solid var(--border); border-radius:6px; padding:4px 10px; }
+  .chip b { margin-left:6px; }
+  pre { margin:6px 0 0; padding:8px; background:var(--bg); border-radius:6px; overflow-x:auto; font-size:12px; white-space:pre-wrap; word-break:break-word; }
+  .banner { padding:8px 12px; border-radius:8px; background:var(--down); color:#fff; display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TransitLK status</h1>
+  <span id="overall" class="pill">checking...</span>
+  <span id="updated" class="muted"></span>
+</header>
+<main>
+  <div id="banner" class="banner"></div>
+  <section><h2>Services</h2><div id="services" class="grid"></div></section>
+  <section><h2>Containers</h2><div class="scroll"><table id="containers"></table></div></section>
+  <section><h2>Data tier</h2><div id="data" class="grid"></div></section>
+  <section><h2>Live counts</h2><div id="counts"></div></section>
+  <section><h2>Recent errors</h2><div id="errors"></div></section>
+</main>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// Everything is built with textContent, never innerHTML, so log text cannot inject markup.
+function el(tag, props, ...kids) {
+  const node = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') node.className = v; else node.setAttribute(k, v);
+  }
+  for (const kid of kids) node.append(kid && kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return node;
+}
+function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+const label = { ok: 'OK', warn: 'Warning', down: 'Down', unknown: '...' };
+
+function tile(title, state, ...lines) {
+  return el('div', { class: 'tile ' + state },
+    el('b', null, title),
+    el('span', { class: 'state ' + state }, label[state] || state),
+    ...lines.map((l) => el('small', { style: 'display:block' }, l)));
+}
+function bar(percent) {
+  const i = el('i', { style: 'width:' + Math.min(100, Math.max(0, percent)) + '%' });
+  if (percent >= 80) i.className = 'hi';
+  return el('span', { class: 'bar' }, i);
+}
+
+function render(s) {
+  const overall = $('overall');
+  overall.className = 'pill ' + s.summary;
+  overall.textContent = s.summary === 'ok' ? 'All systems OK' : s.summary === 'warn' ? 'Needs attention' : s.summary === 'down' ? 'Something is down' : 'checking...';
+  $('updated').textContent = s.generatedAt ? 'updated ' + new Date(s.generatedAt).toLocaleTimeString() : '';
+
+  const services = $('services'); clear(services);
+  for (const x of s.services) {
+    services.append(tile(x.label, x.state, x.error ? x.error : 'HTTP ' + x.status + ' in ' + x.ms + ' ms'));
+  }
+
+  const table = $('containers'); clear(table);
+  table.append(el('tr', null, ...['Container', 'State', 'Uptime', 'Restarts', 'CPU', 'Memory'].map((h) => el('th', null, h))));
+  if (s.containers.error) {
+    table.append(el('tr', null, el('td', { colspan: '6' }, s.containers.error)));
+  }
+  for (const c of s.containers.items) {
+    const st = c.stats;
+    table.append(el('tr', null,
+      el('td', null, c.name.replace('transitlk-', '')),
+      el('td', null, el('span', { class: 'state ' + c.state }, c.status + (c.health !== 'none' ? ' (' + c.health + ')' : ''))),
+      el('td', null, c.uptime || '-'),
+      el('td', null, c.restarts),
+      el('td', null, st ? st.cpuPercent.toFixed(1) + '%' : '-'),
+      el('td', null, st && st.memUsedMb != null ? bar(st.memPercent) : '', st && st.memUsedMb != null ? Math.round(st.memUsedMb) + ' MB' : '-')));
+  }
+
+  const data = $('data'); clear(data);
+  if (s.data) {
+    const d = s.data;
+    data.append(
+      tile('PostgreSQL', d.postgres.state, d.postgres.sizeMb != null ? 'databases ' + d.postgres.sizeMb + ' MB' : 'size unknown'),
+      tile('Redis', d.redis.state, d.redis.liveVehicles != null ? d.redis.liveVehicles + ' bus(es) reporting live' : 'unknown'),
+      tile('Kafka', d.kafka.state,
+        d.kafka.topics.length + ' topics: ' + d.kafka.topics.join(', '),
+        'notification consumers: ' + d.kafka.consumerMembers + ', lag ' + d.kafka.lagTotal));
+  } else {
+    data.append(el('span', { class: 'muted' }, 'collecting...'));
+  }
+
+  const counts = $('counts'); clear(counts);
+  if (s.data) {
+    const groups = [['Trips', s.data.counts.trips], ['Tickets', s.data.counts.tickets], ['Accounts', s.data.counts.users]];
+    for (const [title, map] of groups) {
+      const wrap = el('div', { class: 'counts', style: 'margin-bottom:8px' }, el('b', { style: 'min-width:70px' }, title));
+      const keys = Object.keys(map);
+      if (!keys.length) wrap.append(el('span', { class: 'muted' }, 'none'));
+      for (const k of keys) wrap.append(el('span', { class: 'chip' }, k.toLowerCase(), el('b', null, map[k])));
+      counts.append(wrap);
+    }
+  }
+
+  const errors = $('errors'); clear(errors);
+  const names = Object.keys(s.errors || {});
+  let any = false;
+  for (const n of names) {
+    const lines = s.errors[n];
+    if (!lines.length) continue;
+    any = true;
+    errors.append(el('b', null, n), el('pre', null, lines.join('\n')));
+  }
+  if (!any) errors.append(el('span', { class: 'muted' }, names.length ? 'No recent errors.' : 'collecting...'));
+}
+
+async function tick() {
+  const banner = $('banner');
+  try {
+    const res = await fetch('/api/status', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    render(await res.json());
+    banner.style.display = 'none';
+  } catch (e) {
+    banner.textContent = 'Dashboard server not reachable: ' + e.message;
+    banner.style.display = 'block';
+  }
+}
+tick();
+setInterval(tick, 5000);
+</script>
+</body>
+</html>
